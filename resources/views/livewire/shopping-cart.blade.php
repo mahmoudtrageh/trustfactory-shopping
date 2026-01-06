@@ -62,9 +62,10 @@
                                                 <div class="text-sm text-gray-900">${{ number_format($item->product->price, 2) }}</div>
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap">
-                                                <div class="flex items-center space-x-2">
+                                                <div class="flex items-center space-x-2" wire:loading.class="opacity-50" wire:target="updateQuantity">
                                                     <button
                                                         wire:click="updateQuantity({{ $item->id }}, {{ $item->quantity - 1 }})"
+                                                        wire:loading.attr="disabled"
                                                         @if($item->quantity <= 1) disabled @endif
                                                         class="px-2 py-1 bg-gray-200 rounded hover:bg-gray-300 disabled:bg-gray-100 disabled:cursor-not-allowed">
                                                         -
@@ -72,6 +73,7 @@
                                                     <span class="px-4 py-1 text-gray-900">{{ $item->quantity }}</span>
                                                     <button
                                                         wire:click="updateQuantity({{ $item->id }}, {{ $item->quantity + 1 }})"
+                                                        wire:loading.attr="disabled"
                                                         @if($item->quantity >= $item->product->stock_quantity) disabled @endif
                                                         class="px-2 py-1 bg-gray-200 rounded hover:bg-gray-300 disabled:bg-gray-100 disabled:cursor-not-allowed">
                                                         +
@@ -86,8 +88,11 @@
                                             <td class="px-6 py-4 whitespace-nowrap">
                                                 <button
                                                     wire:click="removeItem({{ $item->id }})"
-                                                    class="text-red-600 hover:text-red-800 font-medium">
-                                                    Remove
+                                                    wire:loading.attr="disabled"
+                                                    wire:target="removeItem({{ $item->id }})"
+                                                    class="text-red-600 hover:text-red-800 font-medium disabled:opacity-50">
+                                                    <span wire:loading.remove wire:target="removeItem({{ $item->id }})">Remove</span>
+                                                    <span wire:loading wire:target="removeItem({{ $item->id }})">Removing...</span>
                                                 </button>
                                             </td>
                                         </tr>
