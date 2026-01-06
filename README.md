@@ -1,59 +1,330 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# TrustFactory Shopping Cart
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+A simple e-commerce shopping cart system built with Laravel, Livewire, and Tailwind CSS. Users can browse products, manage their cart, and admins receive automated notifications about low stock and daily sales reports.
 
-## About Laravel
+---
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## What This Project Does
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+This is a shopping cart application where:
+- Users can **browse products** and see prices and stock availability
+- Users can **add products to their cart** and manage quantities
+- Users can **checkout** to place orders
+- Admins get **email notifications** when products are running low on stock
+- Admins get a **daily sales report** every evening showing what was sold
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+---
 
-## Learning Laravel
+## Tech Stack
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+- **Backend**: Laravel 12 (PHP framework)
+- **Frontend**: Livewire (reactive components without JavaScript)
+- **Styling**: Tailwind CSS (utility-first CSS framework)
+- **Database**: SQLite (for local development)
+- **Queue**: Database-based queue for background jobs
+- **Email**: Log driver (for testing - emails saved to logs)
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+---
 
-## Laravel Sponsors
+## Installation & Setup
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+### 1. Install Dependencies
+```bash
+composer install
+npm install && npm run dev
+```
 
-### Premium Partners
+### 2. Set Up Database
+The project uses SQLite by default (no configuration needed).
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+Run migrations to set up the database:
+```bash
+php artisan migrate:fresh --seed
+```
 
-## Contributing
+This will create the database file and populate it with test data.
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+### 3. Start the Development Server
+```bash
+php artisan serve
+```
 
-## Code of Conduct
+Visit: http://localhost:8000
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+### 4. Run Queue Worker (For Email Jobs)
+In a separate terminal:
+```bash
+php artisan queue:work
+```
 
-## Security Vulnerabilities
+### 5. Run Task Scheduler (For Daily Reports)
+In development:
+```bash
+php artisan schedule:work
+```
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+---
+
+## Key Features (When Complete)
+
+### For Shoppers
+- Browse all available products
+- See product prices and stock levels
+- Add products to shopping cart
+- Update quantities or remove items from cart
+- Checkout to place orders
+- View order history and details
+- Cart items saved to database (persist across sessions)
+
+### For Admins
+- Receive email alerts when products are low on stock
+- Get daily sales report every evening at 6 PM showing:
+  - Total orders placed
+  - Total revenue
+  - Which products were sold and quantities
+
+### Technical Features
+- User authentication (login, register, password reset)
+- Each user has their own isolated cart
+- Cart items stored in database (not session)
+- Stock validation (can't buy more than available)
+- Background email jobs using queues
+- Scheduled daily reports using Laravel scheduler
+
+---
+
+## How It Works
+
+### 1. Products
+Products have:
+- Name
+- Price
+- Stock quantity
+- Description (optional)
+
+### 2. Shopping Cart
+- Each logged-in user has their own cart
+- Cart items are stored in the database
+- Users can add, update quantities, or remove items
+- Cart shows total price
+
+### 3. Checkout Process
+When a user checks out:
+1. System validates all products are still in stock
+2. Creates an order record
+3. Saves order items (snapshot of products at purchase time)
+4. Reduces product stock quantities
+5. Clears user's cart
+6. If any product drops to low stock, sends email to admin
+
+### 4. Email Notifications
+
+**Low Stock Alert**:
+- Triggered automatically after checkout
+- Sent when a product has 10 or fewer items left
+- Goes to admin email address
+
+**Daily Sales Report**:
+- Runs automatically every evening at 6 PM
+- Shows all orders from that day
+- Includes total revenue and products sold
+- Sent to admin email address
+
+---
+
+## Database Structure
+
+### Users
+- Comes from Laravel Breeze (authentication)
+- Tracks which cart and orders belong to which user
+
+### Products
+- Stores all products available for sale
+- Tracks current stock quantity
+
+### Cart Items
+- Links users to products they want to buy
+- Stores quantity for each item
+- Each user can only have one cart item per product
+
+### Orders
+- Stores completed purchases
+- Has unique order number
+- Tracks total amount and status
+
+### Order Items
+- Individual products in an order
+- Saves product name and price at time of purchase (snapshot)
+- Calculates subtotal for each item
+
+---
+
+## Development Commands
+
+### Database
+```bash
+# Run migrations
+php artisan migrate
+
+# Reset database and add test data
+php artisan migrate:fresh --seed
+```
+
+### Queue & Scheduler
+```bash
+# Start queue worker (background jobs)
+php artisan queue:work
+
+# Start scheduler (for daily reports)
+php artisan schedule:work
+```
+
+### Testing
+```bash
+# Run all tests
+php artisan test
+
+# Run tests with coverage report
+php artisan test --coverage
+```
+
+### Code Quality
+```bash
+# Format code (fix style issues)
+./vendor/bin/pint
+
+# Check code formatting (without fixing)
+./vendor/bin/pint --test
+
+# Run static code analysis
+./vendor/bin/phpstan analyse
+```
+
+### Cache
+```bash
+# Clear all cache
+php artisan optimize:clear
+```
+
+---
+
+## Environment Configuration
+
+The `.env` file contains important settings:
+
+```env
+# App
+APP_NAME="TrustFactory Cart"
+APP_ENV=local
+
+# Database (SQLite - no additional config needed)
+DB_CONNECTION=sqlite
+
+# Queue (database)
+QUEUE_CONNECTION=database
+
+# Mail (Log driver - emails saved to storage/logs/laravel.log)
+MAIL_MAILER=log
+MAIL_FROM_ADDRESS=noreply@trustfactory.test
+MAIL_FROM_NAME="${APP_NAME}"
+
+# Cart Settings
+LOW_STOCK_THRESHOLD=10
+ADMIN_EMAIL=admin@example.com
+```
+
+---
+
+## File Structure (When Complete)
+
+```
+trustfactory-cart/
+├── app/
+│   ├── Models/              # Database models (Product, Cart, Order)
+│   ├── Livewire/            # UI components (ProductList, ShoppingCart)
+│   ├── Jobs/                # Background jobs (email notifications)
+│   ├── Mail/                # Email templates
+│   └── Services/            # Business logic (CheckoutService)
+├── database/
+│   ├── migrations/          # Database structure
+│   └── seeders/             # Test data
+├── resources/
+│   └── views/
+│       ├── livewire/        # Component views
+│       └── emails/          # Email templates
+├── routes/
+│   └── web.php              # Application routes
+├── tests/                   # Automated tests
+├── .env                     # Environment configuration
+├── phpstan.neon             # Static analysis config
+└── pint.json                # Code formatting config
+```
+
+---
+
+## Testing Strategy
+
+### Unit Tests
+- Test individual model methods
+- Test business logic in isolation
+- Test checkout service functions
+
+### Feature Tests
+- Test complete user flows
+- Test authentication
+- Test adding to cart
+- Test checkout process
+- Test email notifications
+- Test order management
+
+---
+
+## Laravel Best Practices Used
+
+1. **Eloquent ORM** - Database interactions using models
+2. **Migrations** - Version-controlled database schema
+3. **Seeders** - Reproducible test data
+4. **Livewire Components** - Reactive UI without writing JavaScript
+5. **Jobs & Queues** - Background processing for emails
+6. **Task Scheduling** - Automated daily reports
+7. **Service Classes** - Separate business logic from controllers
+8. **Middleware** - Protect routes (authentication required)
+9. **Mailables** - Clean, testable email templates
+10. **Validation** - Input validation in components
+11. **Testing** - Comprehensive test coverage
+12. **Code Quality** - Automated formatting and static analysis
+
+---
+
+## Support & Documentation
+
+- **Laravel Documentation**: https://laravel.com/docs
+- **Livewire Documentation**: https://livewire.laravel.com/docs
+- **Tailwind CSS Documentation**: https://tailwindcss.com/docs
+
+---
+
+## Project Requirements
+
+This project was built for the TrustFactory technical assessment.
+
+**Requirements**:
+- Simple e-commerce shopping cart
+- User authentication (Laravel Breeze)
+- Product browsing and cart management
+- Database-backed cart (per user)
+- Low stock email notifications (using Jobs/Queues)
+- Daily sales report (scheduled task)
+- Clean code following Laravel best practices
+- Tailwind CSS for styling
+
+**Deliverables**:
+- GitHub repository with code
+- Working application following requirements
+- Clean, maintainable code structure
+
+---
 
 ## License
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+This project is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
