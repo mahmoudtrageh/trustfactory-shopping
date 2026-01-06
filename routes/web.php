@@ -7,12 +7,15 @@ use App\Livewire\ProductList;
 use App\Livewire\ShoppingCart;
 use Illuminate\Support\Facades\Route;
 
-Route::view('/', 'welcome');
+Route::view('/', 'welcome')->name('home');
 
 Route::get('/products', ProductList::class)->name('products.index');
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::view('dashboard', 'dashboard')->name('dashboard');
+    Route::get('dashboard', function () {
+        return redirect()->route('home');
+    })->name('dashboard');
+
     Route::view('profile', 'profile')->name('profile');
 
     Route::get('/cart', ShoppingCart::class)->name('cart');
