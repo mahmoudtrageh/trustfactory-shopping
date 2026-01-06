@@ -5,7 +5,6 @@ namespace App\Livewire;
 use App\Models\CartItem;
 use App\Models\Product;
 use Livewire\Component;
-use Livewire\Attributes\On;
 
 class ProductList extends Component
 {
@@ -15,6 +14,7 @@ class ProductList extends Component
 
         if ($product->isOutOfStock()) {
             session()->flash('error', 'Product is out of stock.');
+
             return;
         }
 
@@ -25,6 +25,7 @@ class ProductList extends Component
         if ($cartItem) {
             if ($cartItem->quantity + 1 > $product->stock_quantity) {
                 session()->flash('error', 'Cannot add more than available stock.');
+
                 return;
             }
             $cartItem->increment('quantity');

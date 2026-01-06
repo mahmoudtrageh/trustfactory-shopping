@@ -29,6 +29,6 @@ class Order extends Model
 
     public static function generateOrderNumber()
     {
-        return 'ORD-' . date('Ymd') . '-' . str_pad(static::whereDate('created_at', today())->count() + 1, 4, '0', STR_PAD_LEFT);
+        return 'ORD-'.date('Ymd').'-'.str_pad(static::whereDate('created_at', today())->count() + 1, 4, '0', STR_PAD_LEFT);
     }
 }
