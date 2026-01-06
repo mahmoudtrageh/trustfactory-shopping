@@ -31,7 +31,6 @@ class CartTest extends TestCase
             ->assertSee($product->name);
     }
 
-
     public function test_user_can_add_product_to_cart(): void
     {
         $user = User::factory()->create();

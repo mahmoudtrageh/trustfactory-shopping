@@ -47,6 +47,6 @@ class Checkout extends Component
         return view('livewire.checkout', [
             'cartItems' => $cartItems,
             'total' => $total,
-        ]);
+        ])->layout('layouts.app');
     }
 }

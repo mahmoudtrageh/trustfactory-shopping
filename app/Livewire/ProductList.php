@@ -10,6 +10,13 @@ class ProductList extends Component
 {
     public function addToCart($productId)
     {
+        if (! auth()->check()) {
+            session()->flash('error', 'Please login to add items to cart.');
+            $this->redirect(route('login'), navigate: true);
+
+            return;
+        }
+
         $product = Product::findOrFail($productId);
 
         if ($product->isOutOfStock()) {
@@ -45,6 +52,6 @@ class ProductList extends Component
     {
         return view('livewire.product-list', [
             'products' => Product::all(),
-        ]);
+        ])->layout('layouts.app');
     }
 }

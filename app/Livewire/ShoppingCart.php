@@ -61,6 +61,6 @@ class ShoppingCart extends Component
         return view('livewire.shopping-cart', [
             'cartItems' => $cartItems,
             'total' => $total,
-        ]);
+        ])->layout('layouts.app');
     }
 }

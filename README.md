@@ -1,330 +1,324 @@
 # TrustFactory Shopping Cart
 
-A simple e-commerce shopping cart system built with Laravel, Livewire, and Tailwind CSS. Users can browse products, manage their cart, and admins receive automated notifications about low stock and daily sales reports.
+A complete e-commerce shopping cart built with Laravel 12, Livewire, and Tailwind CSS. Features include product browsing, cart management, checkout, automated email notifications, and daily sales reports.
 
 ---
 
-## What This Project Does
+## Features
 
-This is a shopping cart application where:
-- Users can **browse products** and see prices and stock availability
-- Users can **add products to their cart** and manage quantities
-- Users can **checkout** to place orders
-- Admins get **email notifications** when products are running low on stock
-- Admins get a **daily sales report** every evening showing what was sold
+**For Customers:**
+- Browse products publicly (no login required)
+- Real-time stock status indicators
+- Guest users can view products and pricing
+- Login required to add items to cart
+- Add/remove items from cart with instant updates
+- Adjust quantities with stock validation
+- Complete checkout process
+- View order history and details
+- Persistent cart (saved to database)
+
+**For Admins:**
+- Automatic low stock email alerts
+- Daily sales reports (6 PM)
+- Product and order management
 
 ---
 
 ## Tech Stack
 
-- **Backend**: Laravel 12 (PHP framework)
-- **Frontend**: Livewire (reactive components without JavaScript)
-- **Styling**: Tailwind CSS (utility-first CSS framework)
-- **Database**: SQLite (for local development)
-- **Queue**: Database-based queue for background jobs
-- **Email**: Log driver (for testing - emails saved to logs)
+- Laravel 12 (PHP 8.2+)
+- Livewire 3 (reactive components)
+- Tailwind CSS 3
+- SQLite database
+- Laravel Breeze authentication
+- Queue system for background jobs
+- Task scheduler for automated reports
 
 ---
 
-## Installation & Setup
+## Quick Start
 
-### 1. Install Dependencies
+### 1. Clone & Install
+
 ```bash
+# Install PHP dependencies
 composer install
-npm install && npm run dev
+
+# Install frontend dependencies
+npm install && npm run build
 ```
 
-### 2. Set Up Database
-The project uses SQLite by default (no configuration needed).
+### 2. Configure Environment
 
-Run migrations to set up the database:
 ```bash
+# Copy environment file
+cp .env.example .env
+
+# Generate application key
+php artisan key:generate
+```
+
+### 3. Set Up Database
+
+```bash
+# Create database and seed with test data
 php artisan migrate:fresh --seed
 ```
 
-This will create the database file and populate it with test data.
+**Test Accounts Created:**
+- Admin: `admin@example.com` / `password`
+- User 1: `user1@test.com` / `password`
+- User 2: `user2@test.com` / `password`
 
-### 3. Start the Development Server
+**Test Products:**
+- Laptop Pro 15" ($999.99) - 50 in stock
+- Wireless Mouse ($29.99) - 100 in stock
+- Mechanical Keyboard ($79.99) - 3 in stock (low)
+- USB-C Hub ($49.99) - 0 in stock (out)
+- 27" Monitor ($299.99) - 25 in stock
+
+### 4. Start Development Server
+
 ```bash
+# Terminal 1: Start Laravel server
 php artisan serve
-```
 
-Visit: http://localhost:8000
-
-### 4. Run Queue Worker (For Email Jobs)
-In a separate terminal:
-```bash
+# Terminal 2: Run queue worker (for emails)
 php artisan queue:work
-```
 
-### 5. Run Task Scheduler (For Daily Reports)
-In development:
-```bash
+# Terminal 3: Run scheduler (for daily reports)
 php artisan schedule:work
 ```
 
+**Open:** http://localhost:8000
+
 ---
 
-## Key Features (When Complete)
+## Testing the App
 
-### For Shoppers
-- Browse all available products
-- See product prices and stock levels
-- Add products to shopping cart
-- Update quantities or remove items from cart
-- Checkout to place orders
-- View order history and details
-- Cart items saved to database (persist across sessions)
+### Quick Test Flow
 
-### For Admins
-- Receive email alerts when products are low on stock
-- Get daily sales report every evening at 6 PM showing:
-  - Total orders placed
-  - Total revenue
-  - Which products were sold and quantities
+**Guest User Flow:**
+1. Visit http://localhost:8000/products (no login required)
+2. Browse all products with stock information
+3. Click "Login to Add to Cart" button
+4. Redirected to login page
 
-### Technical Features
-- User authentication (login, register, password reset)
-- Each user has their own isolated cart
-- Cart items stored in database (not session)
-- Stock validation (can't buy more than available)
-- Background email jobs using queues
-- Scheduled daily reports using Laravel scheduler
+**Authenticated User Flow:**
+1. Login as `user1@test.com` / `password`
+2. Browse products at `/products`
+3. Add items to cart (watch the cart counter update)
+4. View cart at `/cart`
+5. Update quantities or remove items
+6. Proceed to checkout at `/checkout`
+7. Place order
+8. View order details and history at `/orders`
+
+### Run Automated Tests
+
+```bash
+# Run all tests (49 tests)
+php artisan test
+
+# Run with coverage
+php artisan test --coverage
+
+# Run specific test suite
+php artisan test --filter=CartTest
+```
+
+**Test Coverage:**
+- ✅ 13 Unit tests (Models)
+- ✅ 10 Cart feature tests
+- ✅ 17 Authentication tests (Breeze)
+- ✅ 9 Other feature tests
+
+---
+
+## Project Structure
+
+```
+app/
+├── Livewire/              # UI Components
+│   ├── ProductList.php    # Product listing with add to cart
+│   ├── ShoppingCart.php   # Cart management
+│   ├── CartCounter.php    # Header cart badge
+│   ├── Checkout.php       # Order placement
+│   ├── OrderHistory.php   # User's orders list
+│   └── OrderDetails.php   # Individual order view
+├── Models/                # Database Models
+│   ├── Product.php        # Products with stock methods
+│   ├── CartItem.php       # Shopping cart items
+│   ├── Order.php          # Completed orders
+│   └── OrderItem.php      # Order line items
+├── Services/              # Business Logic
+│   └── CheckoutService.php # Order processing
+├── Jobs/                  # Background Tasks
+│   ├── SendLowStockNotification.php
+│   └── SendDailySalesReport.php
+└── Mail/                  # Email Templates
+    ├── LowStockAlert.php
+    └── DailySalesReport.php
+
+database/
+├── migrations/            # Database schema
+└── seeders/              # Test data
+
+tests/
+├── Unit/                 # Unit tests (13 tests)
+│   └── Models/
+└── Feature/              # Feature tests (27 tests)
+    ├── CartTest.php      # Cart operations (10 tests)
+    └── Auth/             # Authentication (17 tests)
+```
 
 ---
 
 ## How It Works
 
-### 1. Products
-Products have:
-- Name
-- Price
-- Stock quantity
-- Description (optional)
+### Authentication & Access Control
+- **Public Access**: Product browsing (/products) - no login required
+- **Requires Authentication**:
+  - Adding items to cart
+  - Viewing cart (/cart)
+  - Checkout process (/checkout)
+  - Order history (/orders)
+- **Guest User Experience**: Can browse products, see pricing and stock, click "Login to Add to Cart" button
 
-### 2. Shopping Cart
-- Each logged-in user has their own cart
-- Cart items are stored in the database
-- Users can add, update quantities, or remove items
-- Cart shows total price
+### Checkout Flow
+1. User adds products to cart → validated against stock
+2. User views cart → can update quantities or remove items
+3. User proceeds to checkout → sees order summary
+4. User places order:
+   - Order created with unique number (ORD-YYYYMMDD-####)
+   - Product stock reduced
+   - Cart cleared
+   - Low stock email sent if threshold reached
+5. User views order confirmation and history
 
-### 3. Checkout Process
-When a user checks out:
-1. System validates all products are still in stock
-2. Creates an order record
-3. Saves order items (snapshot of products at purchase time)
-4. Reduces product stock quantities
-5. Clears user's cart
-6. If any product drops to low stock, sends email to admin
+### Email Notifications
+- **Low Stock Alert**: Sent to admin when stock ≤ 10 (configurable)
+- **Daily Sales Report**: Sent at 6 PM with sales summary
+- Emails logged to `storage/logs/laravel.log` (dev mode)
 
-### 4. Email Notifications
-
-**Low Stock Alert**:
-- Triggered automatically after checkout
-- Sent when a product has 10 or fewer items left
-- Goes to admin email address
-
-**Daily Sales Report**:
-- Runs automatically every evening at 6 PM
-- Shows all orders from that day
-- Includes total revenue and products sold
-- Sent to admin email address
+### Stock Management
+- Real-time stock validation
+- Prevents overselling
+- Color-coded badges: Green (in stock) / Yellow (low) / Red (out)
+- Cart quantities cannot exceed available stock
 
 ---
 
-## Database Structure
+## Common Commands
 
-### Users
-- Comes from Laravel Breeze (authentication)
-- Tracks which cart and orders belong to which user
-
-### Products
-- Stores all products available for sale
-- Tracks current stock quantity
-
-### Cart Items
-- Links users to products they want to buy
-- Stores quantity for each item
-- Each user can only have one cart item per product
-
-### Orders
-- Stores completed purchases
-- Has unique order number
-- Tracks total amount and status
-
-### Order Items
-- Individual products in an order
-- Saves product name and price at time of purchase (snapshot)
-- Calculates subtotal for each item
-
----
-
-## Development Commands
-
-### Database
 ```bash
-# Run migrations
-php artisan migrate
+# Development
+php artisan serve                    # Start server
+php artisan queue:work              # Process background jobs
+php artisan schedule:work           # Run scheduled tasks
 
-# Reset database and add test data
-php artisan migrate:fresh --seed
-```
+# Database
+php artisan migrate:fresh --seed   # Reset DB with test data
+php artisan tinker                  # Interactive shell
 
-### Queue & Scheduler
-```bash
-# Start queue worker (background jobs)
-php artisan queue:work
+# Testing & Quality
+php artisan test                    # Run all tests
+./vendor/bin/pint                  # Format code
+./vendor/bin/phpstan analyse       # Static analysis
 
-# Start scheduler (for daily reports)
-php artisan schedule:work
-```
-
-### Testing
-```bash
-# Run all tests
-php artisan test
-
-# Run tests with coverage report
-php artisan test --coverage
-```
-
-### Code Quality
-```bash
-# Format code (fix style issues)
-./vendor/bin/pint
-
-# Check code formatting (without fixing)
-./vendor/bin/pint --test
-
-# Run static code analysis
-./vendor/bin/phpstan analyse
-```
-
-### Cache
-```bash
-# Clear all cache
-php artisan optimize:clear
+# Maintenance
+php artisan optimize:clear         # Clear all caches
+php artisan queue:failed           # View failed jobs
+php artisan schedule:list          # View scheduled tasks
 ```
 
 ---
 
-## Environment Configuration
+## Configuration
 
-The `.env` file contains important settings:
+Edit `.env` for customization:
 
 ```env
-# App
-APP_NAME="TrustFactory Cart"
-APP_ENV=local
+# Low stock threshold (default: 10)
+LOW_STOCK_THRESHOLD=10
 
-# Database (SQLite - no additional config needed)
-DB_CONNECTION=sqlite
+# Admin email for notifications
+ADMIN_EMAIL=admin@example.com
 
-# Queue (database)
+# Queue connection
 QUEUE_CONNECTION=database
 
-# Mail (Log driver - emails saved to storage/logs/laravel.log)
+# Mail driver (log for development, smtp for production)
 MAIL_MAILER=log
-MAIL_FROM_ADDRESS=noreply@trustfactory.test
-MAIL_FROM_NAME="${APP_NAME}"
-
-# Cart Settings
-LOW_STOCK_THRESHOLD=10
-ADMIN_EMAIL=admin@example.com
 ```
 
 ---
 
-## File Structure (When Complete)
+## Troubleshooting
 
-```
-trustfactory-cart/
-├── app/
-│   ├── Models/              # Database models (Product, Cart, Order)
-│   ├── Livewire/            # UI components (ProductList, ShoppingCart)
-│   ├── Jobs/                # Background jobs (email notifications)
-│   ├── Mail/                # Email templates
-│   └── Services/            # Business logic (CheckoutService)
-├── database/
-│   ├── migrations/          # Database structure
-│   └── seeders/             # Test data
-├── resources/
-│   └── views/
-│       ├── livewire/        # Component views
-│       └── emails/          # Email templates
-├── routes/
-│   └── web.php              # Application routes
-├── tests/                   # Automated tests
-├── .env                     # Environment configuration
-├── phpstan.neon             # Static analysis config
-└── pint.json                # Code formatting config
+**Server won't start:**
+```bash
+php artisan optimize:clear
+composer dump-autoload
 ```
 
----
+**Tests failing:**
+```bash
+php artisan config:clear
+php artisan migrate:fresh --env=testing
+```
 
-## Testing Strategy
+**Queue not processing:**
+```bash
+php artisan queue:restart
+php artisan queue:work --once
+```
 
-### Unit Tests
-- Test individual model methods
-- Test business logic in isolation
-- Test checkout service functions
-
-### Feature Tests
-- Test complete user flows
-- Test authentication
-- Test adding to cart
-- Test checkout process
-- Test email notifications
-- Test order management
-
----
-
-## Laravel Best Practices Used
-
-1. **Eloquent ORM** - Database interactions using models
-2. **Migrations** - Version-controlled database schema
-3. **Seeders** - Reproducible test data
-4. **Livewire Components** - Reactive UI without writing JavaScript
-5. **Jobs & Queues** - Background processing for emails
-6. **Task Scheduling** - Automated daily reports
-7. **Service Classes** - Separate business logic from controllers
-8. **Middleware** - Protect routes (authentication required)
-9. **Mailables** - Clean, testable email templates
-10. **Validation** - Input validation in components
-11. **Testing** - Comprehensive test coverage
-12. **Code Quality** - Automated formatting and static analysis
+**Check logs:**
+```bash
+tail -f storage/logs/laravel.log
+```
 
 ---
 
-## Support & Documentation
+## Production Deployment
 
-- **Laravel Documentation**: https://laravel.com/docs
-- **Livewire Documentation**: https://livewire.laravel.com/docs
-- **Tailwind CSS Documentation**: https://tailwindcss.com/docs
+Before deploying to production:
 
----
+1. Update `.env`:
+   - Set `APP_ENV=production`
+   - Set `APP_DEBUG=false`
+   - Configure real database (MySQL/PostgreSQL)
+   - Set up SMTP for emails
 
-## Project Requirements
+2. Optimize:
+   ```bash
+   composer install --optimize-autoloader --no-dev
+   php artisan config:cache
+   php artisan route:cache
+   php artisan view:cache
+   npm run build
+   ```
 
-This project was built for the TrustFactory technical assessment.
-
-**Requirements**:
-- Simple e-commerce shopping cart
-- User authentication (Laravel Breeze)
-- Product browsing and cart management
-- Database-backed cart (per user)
-- Low stock email notifications (using Jobs/Queues)
-- Daily sales report (scheduled task)
-- Clean code following Laravel best practices
-- Tailwind CSS for styling
-
-**Deliverables**:
-- GitHub repository with code
-- Working application following requirements
-- Clean, maintainable code structure
+3. Set up supervisor for queue worker
+4. Configure cron for scheduler:
+   ```
+   * * * * * cd /path && php artisan schedule:run >> /dev/null 2>&1
+   ```
 
 ---
 
 ## License
 
-This project is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+MIT License - See LICENSE file for details
+
+---
+
+## Support
+
+Built for TrustFactory technical assessment
+
+**Documentation:**
+- [Laravel 12](https://laravel.com/docs)
+- [Livewire 3](https://livewire.laravel.com/docs)
+- [Tailwind CSS](https://tailwindcss.com/docs)

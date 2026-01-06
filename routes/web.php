@@ -9,11 +9,12 @@ use Illuminate\Support\Facades\Route;
 
 Route::view('/', 'welcome');
 
+Route::get('/products', ProductList::class)->name('products.index');
+
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::view('dashboard', 'dashboard')->name('dashboard');
     Route::view('profile', 'profile')->name('profile');
 
-    Route::get('/products', ProductList::class)->name('products.index');
     Route::get('/cart', ShoppingCart::class)->name('cart');
     Route::get('/checkout', Checkout::class)->name('checkout');
     Route::get('/orders', OrderHistory::class)->name('orders.index');

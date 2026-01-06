@@ -55,6 +55,8 @@
                                     <span wire:loading.remove wire:target="addToCart({{ $product->id }})">
                                         @if($product->isOutOfStock())
                                             Out of Stock
+                                        @elseif(!auth()->check())
+                                            Login to Add to Cart
                                         @else
                                             Add to Cart
                                         @endif

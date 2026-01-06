@@ -23,6 +23,6 @@ class OrderDetails extends Component
 
         return view('livewire.order-details', [
             'order' => $order,
-        ]);
+        ])->layout('layouts.app');
     }
 }
