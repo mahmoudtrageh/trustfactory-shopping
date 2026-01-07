@@ -133,6 +133,75 @@ php artisan test --filter=CartTest
 - ✅ 17 Authentication tests (Breeze)
 - ✅ 9 Other feature tests
 
+### Testing Email Jobs
+
+The application includes two automated email jobs that you can test manually:
+
+#### 1. Low Stock Notification
+
+This job sends an email alert when a product's stock falls below the threshold (default: 10).
+
+**Prerequisites:**
+- Ensure queue worker is running: `php artisan queue:work`
+- Configure mail settings in `.env` (use Mailtrap for testing)
+
+**Test Command:**
+```bash
+# Option 1: Using tinker (one-line)
+php artisan tinker --execute="App\Jobs\SendLowStockNotification::dispatch(App\Models\Product::first());"
+
+# Option 2: Using tinker (interactive)
+php artisan tinker
+App\Jobs\SendLowStockNotification::dispatch(App\Models\Product::first());
+exit
+```
+
+**Expected Result:**
+- Email sent to `ADMIN_EMAIL` configured in `.env`
+- Subject: "Low Stock Alert: [Product Name]"
+- Check Mailtrap inbox at: https://mailtrap.io/inboxes
+
+#### 2. Daily Sales Report
+
+This job sends a daily summary of all orders and products sold (scheduled for 6 PM daily).
+
+**Prerequisites:**
+- Ensure queue worker is running: `php artisan queue:work`
+- Configure mail settings in `.env` (use Mailtrap for testing)
+
+**Test Command:**
+```bash
+# Option 1: Using tinker (one-line)
+php artisan tinker --execute="App\Jobs\SendDailySalesReport::dispatch(now());"
+
+# Option 2: Using tinker (interactive)
+php artisan tinker
+App\Jobs\SendDailySalesReport::dispatch(now());
+exit
+```
+
+**Expected Result:**
+- Email sent to `ADMIN_EMAIL` configured in `.env`
+- Subject: "Daily Sales Report - [Date]"
+- Contains: Total orders, total revenue, products sold
+- Check Mailtrap inbox at: https://mailtrap.io/inboxes
+
+**Mailtrap Setup (for testing):**
+1. Sign up at https://mailtrap.io
+2. Get your SMTP credentials
+3. Update `.env`:
+   ```env
+   MAIL_MAILER=smtp
+   MAIL_HOST=sandbox.smtp.mailtrap.io
+   MAIL_PORT=2525
+   MAIL_USERNAME=your_username
+   MAIL_PASSWORD=your_password
+   MAIL_ENCRYPTION=tls
+   MAIL_FROM_ADDRESS=noreply@trustfactory-cart.test
+   ```
+4. Clear config cache: `php artisan config:clear`
+5. Run the test commands above
+
 ---
 
 ## Project Structure
