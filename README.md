@@ -348,35 +348,6 @@ php artisan queue:work --once
 tail -f storage/logs/laravel.log
 ```
 
----
-
-## Production Deployment
-
-Before deploying to production:
-
-1. Update `.env`:
-   - Set `APP_ENV=production`
-   - Set `APP_DEBUG=false`
-   - Configure real database (MySQL/PostgreSQL)
-   - Set up SMTP for emails
-
-2. Optimize:
-   ```bash
-   composer install --optimize-autoloader --no-dev
-   php artisan config:cache
-   php artisan route:cache
-   php artisan view:cache
-   npm run build
-   ```
-
-3. Set up supervisor for queue worker
-4. Configure cron for scheduler:
-   ```
-   * * * * * cd /path && php artisan schedule:run >> /dev/null 2>&1
-   ```
-
----
-
 ## License
 
 MIT License - See LICENSE file for details
